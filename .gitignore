@@ -58,3 +58,11 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+/Assets/_EXTERNAL
+/Assets/_EXTERNAL.meta
+/.idea*
+/UserSettings/
+/ProjectSettings/
+/Packages/
+/Assets/Resources*
+/Assets/Scenes*
