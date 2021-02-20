@@ -151,16 +151,19 @@ public class SkinnedMeshToolsEditorCore
         Vector2 pos2D = HandleUtility.WorldToGUIPoint(p_position);
         int scale = 10;
         Rect mouseRect = new Rect(pos2D.x - scale / 2, pos2D.y - scale / 2, scale, scale);
-        
-        if (p_index == Config.boneIndex)
+
+        if (Config.showBoneWeights)
         {
-            GUI.color = Color.green;
-            scale = 16;
-        } 
-        else if (mouseRect.Contains(Event.current.mousePosition))
-        {
-            GUI.color = Color.yellow;
-            scale = 16;
+            if (p_index == Config.boneIndex)
+            {
+                GUI.color = Color.green;
+                scale = 16;
+            }
+            else if (mouseRect.Contains(Event.current.mousePosition))
+            {
+                GUI.color = Color.yellow;
+                scale = 16;
+            }
         }
 
         if (GUI.Button(new Rect(pos2D.x - scale / 2, pos2D.y - scale / 2, scale, scale), circleTexture, GUIStyle.none))
