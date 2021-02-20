@@ -9,6 +9,8 @@ using UnityEngine;
 [Serializable]
 public class SkinnedMeshToolsEditorConfig : ScriptableObject
 {
+    public bool enabled = true;
+    
     public int boneIndex = 1;
 
     public bool showBoneWeights = false;

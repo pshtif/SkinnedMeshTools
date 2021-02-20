@@ -8,7 +8,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public class SkinnedMeshToolsEditorCore
 {
-    static private Texture circleTexture = Resources.Load<Texture>("Circle_Icon");
+    static private Texture circleTexture => Resources.Load<Texture>("Circle_Icon");
 
     static private Material _boneWeightMaterial;
     static private Material boneWeightMaterial
@@ -23,7 +23,7 @@ public class SkinnedMeshToolsEditorCore
     static private GameObject previousSelected;
     
     static public SkinnedMeshToolsEditorConfig Config { get; private set; }
-    
+
     static void CreateConfig()
     {
         Config = (SkinnedMeshToolsEditorConfig) AssetDatabase.LoadAssetAtPath("Assets/Resources/SkinnedMeshToolsEditorConfig.asset",
@@ -57,7 +57,7 @@ public class SkinnedMeshToolsEditorCore
     private static void OnSceneGUI(SceneView p_view)
     {
         GameObject selected = Selection.activeGameObject;
-        if (selected == null || !selected.activeInHierarchy)
+        if (selected == null || !selected.activeInHierarchy || !Config.enabled)
             return;
 
         SkinnedMeshRenderer smr = selected.GetComponent<SkinnedMeshRenderer>();
@@ -110,7 +110,7 @@ public class SkinnedMeshToolsEditorCore
         GUILayout.EndArea();
 
         GUI.color = new Color(.75f, .75f, .75f);
-        GUI.Label(new Rect(Screen.width-180,5, 180, 20), "BoneTools v0.1b");
+        GUI.Label(new Rect(Screen.width-180,5, 180, 20), "SkinnedMeshTools v0.1b");
         GUI.color = Color.white;
 
         Handles.EndGUI();
