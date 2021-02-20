@@ -20,5 +20,7 @@ public class SkinnedMeshToolsEditorConfig : ScriptableObject
     public bool useAlphaForWeightColor = true;
     
     public Color boneWeightColor;
+
+    public bool enableEditing = false;
 }
 #endif

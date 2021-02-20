@@ -20,7 +20,9 @@ public class SkinnedMeshToolsEditorCore
             return _boneWeightMaterial;
         }
     } 
-    static private GameObject previousSelected;
+    static private GameObject _previousSelected;
+
+    static private SkinnedMeshRenderer _currentSkinnedMesh;
     
     static public SkinnedMeshToolsEditorConfig Config { get; private set; }
 
@@ -56,30 +58,31 @@ public class SkinnedMeshToolsEditorCore
 
     private static void OnSceneGUI(SceneView p_view)
     {
+        Tools.hidden = false;
         GameObject selected = Selection.activeGameObject;
         if (selected == null || !selected.activeInHierarchy || !Config.enabled)
             return;
 
-        SkinnedMeshRenderer smr = selected.GetComponent<SkinnedMeshRenderer>();
-        if (smr == null)
+        _currentSkinnedMesh = selected.GetComponent<SkinnedMeshRenderer>();
+        if (_currentSkinnedMesh == null)
         {
-            smr = selected.GetComponentInChildren<SkinnedMeshRenderer>();
-            if (smr == null)
+            _currentSkinnedMesh = selected.GetComponentInChildren<SkinnedMeshRenderer>();
+            if (_currentSkinnedMesh == null)
                 return;
         }
 
         if (Config.showBones && Config.showBoneWeights)
-            DrawBoneWeights(smr, Config.boneIndex);
+            DrawBoneWeights(Config.boneIndex);
 
         if (Config.showBones)
-            DrawBones(smr);
+            DrawBones();
         
         //DrawBindPose(smr);
         
-        DrawGUI(smr);
+        DrawGUI();
     }
 
-    private static void DrawGUI(SkinnedMeshRenderer p_skinnedMesh)
+    private static void DrawGUI()
     {
         Handles.BeginGUI();
         
@@ -88,7 +91,7 @@ public class SkinnedMeshToolsEditorCore
         GUI.color = new Color(0,0,0,.7f);
         GUI.Box(new Rect(0,0,Screen.width,30),"", style);
         
-        GUILayout.BeginArea(new Rect(5,5,500,20));
+        GUILayout.BeginArea(new Rect(5,5,600,20));
         GUILayout.BeginHorizontal();
 
         GUI.color = Color.white;
@@ -96,12 +99,13 @@ public class SkinnedMeshToolsEditorCore
 
         if (Config.showBones)
         {
+            Config.enableEditing = GUILayout.Toggle(Config.enableEditing, "Enable editing", GUILayout.Width(100));
             Config.showBoneWeights = GUILayout.Toggle(Config.showBoneWeights, "Show Bone Weights");
         }
 
         if (Config.showBones && Config.showBoneWeights)
         {
-            string[] boneNames = GetBoneNames(p_skinnedMesh);
+            string[] boneNames = GetBoneNames(_currentSkinnedMesh);
             Config.boneIndex = EditorGUILayout.Popup(Config.boneIndex, boneNames);
 
             Config.useAlphaForWeightColor = GUILayout.Toggle(Config.useAlphaForWeightColor, "Use Alpha");
@@ -116,13 +120,13 @@ public class SkinnedMeshToolsEditorCore
         Handles.EndGUI();
     }
     
-    private static void DrawBindPose(SkinnedMeshRenderer p_skinnedMesh)
+    private static void DrawBindPose()
     {
         Handles.BeginGUI();
         GUI.color = Color.green;
         
         List<Matrix4x4> bindPoses = new List<Matrix4x4>();
-        p_skinnedMesh.sharedMesh.GetBindposes(bindPoses);
+        _currentSkinnedMesh.sharedMesh.GetBindposes(bindPoses);
         foreach (Matrix4x4 pose in bindPoses)
         {
             Vector3 position = pose.inverse.MultiplyPoint(Vector3.zero);
@@ -133,19 +137,32 @@ public class SkinnedMeshToolsEditorCore
         Handles.EndGUI();
     }
     
-    private static void DrawBones(SkinnedMeshRenderer p_skinnedMesh)
+    private static void DrawBones()
     {
-        List<Transform> bones = p_skinnedMesh.bones.ToList();
+        List<Transform> bones = _currentSkinnedMesh.bones.ToList();
         if (bones == null || bones.Count == 0)
             return;
         
         bones.FindAll(b => bones.Contains(b.parent)).ForEach(b => Handles.DrawLine(b.parent.position, b.position));
         Handles.BeginGUI();
-        bones.ForEach(b => DrawBonePoint(bones.IndexOf(b), b.position));
+        bones.ForEach(b => DrawBone(bones.IndexOf(b), b.position));
         Handles.EndGUI();
+
+        if (Config.enableEditing)
+        {
+            Tools.hidden = true;
+            EditorGUI.BeginChangeCheck();
+            Transform currentBone = _currentSkinnedMesh.bones[Config.boneIndex];
+            Quaternion rot = Handles.RotationHandle(currentBone.rotation, currentBone.position);
+            if (EditorGUI.EndChangeCheck())
+            {
+                Undo.RecordObject(_currentSkinnedMesh.gameObject, "Bone rotation");
+                currentBone.rotation = rot;
+            }
+        }
     }
 
-    private static void DrawBonePoint(int p_index, Vector3 p_position)
+    private static void DrawBone(int p_index, Vector3 p_position)
     {
         GUI.color = Color.white;
         Vector2 pos2D = HandleUtility.WorldToGUIPoint(p_position);
@@ -182,14 +199,14 @@ public class SkinnedMeshToolsEditorCore
         GUI.color = Color.white;
     }
     
-    private static void DrawBoneWeights(SkinnedMeshRenderer p_skinnedMesh, int p_boneIndex)
+    private static void DrawBoneWeights(int p_boneIndex)
     {
         GL.Clear(true, false, Color.black);
-        Mesh mesh = GenerateBoneWeightMesh(p_skinnedMesh, p_boneIndex);
+        Mesh mesh = GenerateBoneWeightMesh(_currentSkinnedMesh, p_boneIndex);
         if (boneWeightMaterial != null)
         {
             boneWeightMaterial.SetPass(0);
-            Graphics.DrawMeshNow(mesh, p_skinnedMesh.transform.localToWorldMatrix);
+            Graphics.DrawMeshNow(mesh, _currentSkinnedMesh.transform.localToWorldMatrix);
         }
     }
 
