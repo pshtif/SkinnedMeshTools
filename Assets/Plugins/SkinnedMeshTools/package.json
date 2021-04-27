@@ -1,0 +1,18 @@
+{
+  "name": "com.shtif.skinnedmeshtools",
+  "displayName": "Skinned Mesh Tools",
+  "version": "0.1.0",
+  "unity": "2019.4",
+  "description": "Tools for skinned meshes.",
+  "author": {
+	"name": "Peter @sHTiF Stefcek",
+	"email": "psthif@gmail.com"
+  },
+  "keywords": [ 
+	"package",
+	"unity",
+  "skinnedmesh"
+  ],
+  "dependencies": {
+  }
+}
